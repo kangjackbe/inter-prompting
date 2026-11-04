@@ -115,9 +115,23 @@ h3{margin-bottom:6px}
 <option value="polite">정중하게</option>
 </select>
 
+<label for="engine">어느 AI 엔진에 쓸 건가요? (엔진별로 형식이 달라집니다)</label>
+<select id="engine">
+<option value="chatgpt" selected>ChatGPT (GPT)</option>
+<option value="claude">Claude</option>
+<option value="gemini">Gemini</option>
+<option value="perplexity">Perplexity</option>
+<option value="grok">Grok</option>
+<option value="copilot">Copilot</option>
+<option value="deepseek">DeepSeek</option>
+<option value="mistral">Mistral</option>
+</select>
+<div id="engineNote" class="note" style="margin-top:10px">ChatGPT용: 표준 역할 + 목표 + 형식 구조로 만듭니다. 만든 뒤 “선택한 엔진에서 열기”를 누르면 ChatGPT에 프롬프트가 채워진 채로 열립니다.</div>
+
 <button type="button" class="primary" id="makeBtn">프롬프트 만들기</button>
 <div id="makeOut" class="out">여기에 만든 프롬프트가 나옵니다.</div>
 <button type="button" class="copy" id="copyMake">프롬프트 복사하기</button>
+<button type="button" class="secondary" id="openEngine">선택한 엔진에서 열기</button>
 <button type="button" class="secondary" id="saveMake">이 프롬프트 저장함에 저장하기</button>
 
 <h3>특별 기능: 한 번에 3가지 버전</h3>
@@ -137,7 +151,7 @@ h3{margin-bottom:6px}
 </div>
 <div class="note" style="margin-top:12px">
 <strong>솔직한 안내</strong><br>
-이 버전은 서버 AI가 아니라 기기 안에서 돌아가는 전문가 구조 엔진입니다. 그래서 무료로, 로그인 없이, 인터넷이 없어도 프롬프트를 만들 수 있습니다. 진짜 AI가 직접 글을 써주게 하려면 유료 API 키가 필요해서, 그 부분은 나중에 부모님과 상의한 뒤에 연결하는 구조로 남겨두었습니다.
+이 버전은 서버 AI가 아니라 기기 안에서 돌아가는 전문가 구조 엔진입니다. 그래서 무료로, 로그인 없이, 인터넷이 없어도 프롬프트를 만들 수 있습니다. 엔진 지원도 API 키로 각 AI를 직접 부르는 방식이 아니라, 엔진별 형식 맞춤 + 공식 채팅 열기 방식입니다. ChatGPT와 Perplexity는 주소로 프롬프트가 채워지고, Claude 웹은 주소 채우기가 중단돼서 복사 후 붙여넣기로 열립니다. 각 AI를 직접 API로 부르려면 엔진별 유료 API 키가 필요해서, 그 부분은 나중에 부모님과 상의한 뒤에 연결하는 구조로 남겨두었습니다.
 </div>
 </section>
 
@@ -299,11 +313,30 @@ function copyText(id) {
   }
 }
 
+const ENGINES = {
+  chatgpt: { name: 'ChatGPT', note: 'ChatGPT용: 표준 역할 + 목표 + 형식 구조로 만듭니다. 만든 뒤 “선택한 엔진에서 열기”를 누르면 ChatGPT에 프롬프트가 채워진 채로 열립니다.', extra: '', open: (p) => 'https://chatgpt.com/?q=' + encodeURIComponent(p), prefill: true },
+  claude: { name: 'Claude', note: 'Claude용: XML 태그로 역할·과제·형식을 나누고, 단계별 사고를 요청합니다. Claude 웹은 주소로 프롬프트 채우기를 안정적으로 지원하지 않아서, 열기 버튼은 프롬프트를 복사한 뒤 Claude 새 채팅을 엽니다. 거기서 붙여넣기만 하면 됩니다.', extra: '\n\nThink step by step before answering.', open: () => 'https://claude.ai/new', prefill: false },
+  gemini: { name: 'Gemini', note: 'Gemini용: 짧고 직접적으로, 제목과 요약을 먼저 요청합니다. 주소로 프롬프트 채우기가 보장되지 않아서, 열기 버튼은 프롬프트를 복사한 뒤 Gemini를 엽니다.', extra: '\n\n먼저 한 줄 요약, 그 다음 본문으로 답해줘.', open: () => 'https://gemini.google.com/app', prefill: false },
+  perplexity: { name: 'Perplexity', note: 'Perplexity용: 최신 정보는 웹에서 찾고 출처 링크를 달도록 요청합니다. 만든 뒤 “선택한 엔진에서 열기”를 누르면 Perplexity 검색에 프롬프트가 채워진 채로 열립니다.', extra: '\n\n최신 정보가 필요하면 웹에서 검색하고, 출처 링크를 함께 달아줘. 사실과 의견은 구분해서 알려줘.', open: (p) => 'https://www.perplexity.ai/search?q=' + encodeURIComponent(p), prefill: true },
+  grok: { name: 'Grok', note: 'Grok용: 군더더기 없이 짧고 직접적으로 요청합니다. 열기 버튼은 프롬프트를 복사한 뒤 Grok을 엽니다.', extra: '\n\n군더더기 없이 짧고 직접적으로 답해줘.', open: () => 'https://grok.com/', prefill: false },
+  copilot: { name: 'Copilot', note: 'Copilot용: 업무용으로, 실행 가능한 단계와 요약을 강조합니다. 열기 버튼은 프롬프트를 복사한 뒤 Copilot을 엽니다.', extra: '\n\n실행 가능한 단계와 마지막 요약을 포함해줘.', open: () => 'https://copilot.microsoft.com/', prefill: false },
+  deepseek: { name: 'DeepSeek', note: 'DeepSeek용: 추론 과정을 간단히 보여주고 최종 답을 정리하도록 요청합니다. 열기 버튼은 프롬프트를 복사한 뒤 DeepSeek 채팅을 엽니다.', extra: '\n\n추론 과정을 간단히 보여준 뒤, 최종 답을 정리해줘. 코드는 코드 블록으로 줘.', open: () => 'https://chat.deepseek.com/', prefill: false },
+  mistral: { name: 'Mistral', note: 'Mistral용: 문장을 짧게, 한국어로 명확하게 요청합니다. 열기 버튼은 프롬프트를 복사한 뒤 Mistral 채팅을 엽니다.', extra: '\n\n문장은 짧게, 한국어로 명확하게 답해줘.', open: () => 'https://chat.mistral.ai/chat', prefill: false }
+};
+
+function enginePrompt(base, engineKey) {
+  const e = ENGINES[engineKey] || ENGINES.chatgpt;
+  if (engineKey === 'claude') {
+    return '<role>' + base.split('\n\n')[0] + '</role>\n<task>' + base.split('\n\n').slice(1).join('\n\n') + '</task>' + e.extra;
+  }
+  return base + e.extra;
+}
+
 function buildMainPrompt() {
   const want = $('want').value.trim();
   if (!want) return '';
   const f = FIELDS[$('field').value];
-  return '너는 ' + f.role + '야.\n\n'
+  const base = '너는 ' + f.role + '야.\n\n'
     + '내가 원하는 일: ' + want + '\n'
     + '원하는 결과물: ' + OUTTYPES[$('outtype').value] + '\n'
     + '수준: ' + DETAILS[$('detail').value] + '\n'
@@ -314,7 +347,25 @@ function buildMainPrompt() {
     + '3. 내 요청이 모호하면 바로 답하지 말고, 먼저 꼭 필요한 질문 2~3개만 물어봐.\n'
     + '4. 마지막에는 내가 다음에 무엇을 하면 되는지 한 문장으로 정리해줘.\n\n'
     + '지금 바로 위 조건에 맞게 답해줘.';
+  return enginePrompt(base, $('engine').value);
 }
+
+$('engine').addEventListener('change', () => {
+  $('engineNote').textContent = ENGINES[$('engine').value].note;
+});
+
+$('openEngine').addEventListener('click', () => {
+  const text = $('makeOut').textContent;
+  if (!text || text.includes('여기에')) { alert('먼저 프롬프트를 만들어주세요.'); return; }
+  const e = ENGINES[$('engine').value];
+  if (e.prefill) {
+    window.open(e.open(text), '_blank');
+  } else {
+    if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {});
+    alert(e.name + '에 프롬프트를 복사했어요. 열린 창에 붙여넣기만 하면 됩니다.');
+    window.open(e.open(text), '_blank');
+  }
+});
 
 $('makeBtn').addEventListener('click', () => {
   const p = buildMainPrompt();
