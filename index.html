@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="google-site-verification" content="qjo9-00DTn-WbuZDQlzy_6DepAlVYFPsLDWydOW5UQg" />
+<title>Inter Prompting - 사람과 AI 사이</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif;background:#eef2f7;color:#0f172a;line-height:1.7}
+body.big{font-size:19px}
+header{background:linear-gradient(135deg,#0f172a 0%,#1e3a8a 55%,#0e7490 100%);color:#fff;padding:36px 20px 28px}
+header h1{margin:0 0 6px;font-size:38px;letter-spacing:-.5px}
+header p{margin:0;opacity:.92;max-width:760px}
+.eyebrow{font-size:13px;letter-spacing:2px;text-transform:uppercase;opacity:.75;margin-bottom:10px}
+.wrap{max-width:880px;margin:0 auto;padding:20px}
+.hero-steps{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.hero-steps span{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);padding:9px 12px;border-radius:999px;font-size:14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;position:sticky;top:0;z-index:5;background:#eef2f7;padding:10px 0}
+.tabs button{border:1px solid #cbd5e1;background:#fff;color:#334155;padding:12px 15px;border-radius:999px;font-weight:700;cursor:pointer;font-size:15px}
+.tabs button.active{background:#0f172a;color:#fff;border-color:#0f172a}
+.card{background:#fff;border:1px solid #e2e8f0;border-radius:20px;padding:24px;box-shadow:0 8px 30px rgba(15,23,42,.07);margin-bottom:16px}
+label{display:block;font-weight:800;margin:16px 0 6px}
+textarea,select,input[type=text]{width:100%;padding:14px;border:2px solid #cbd5e1;border-radius:12px;font-size:16px;line-height:1.6;background:#fff}
+textarea:focus,select:focus,input[type=text]:focus{outline:none;border-color:#0e7490;box-shadow:0 0 0 3px rgba(14,116,144,.15)}
+textarea{min-height:120px}
+button.primary{background:#f59e0b;border:0;color:#0f172a;font-weight:800;padding:15px 18px;border-radius:12px;cursor:pointer;font-size:17px;width:100%;margin-top:14px}
+button.primary:hover{background:#fbbf24}
+button.copy{background:#0f172a;color:#fff;border:0;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;margin-top:10px}
+button.chip{background:#eff6ff;border:1px solid #bfdbfe;padding:8px 12px;border-radius:999px;cursor:pointer;margin:4px 4px 0 0}
+button.secondary{background:#fff;border:2px solid #0f172a;color:#0f172a;padding:11px 14px;border-radius:10px;cursor:pointer;font-weight:700;margin-top:10px}
+.out{white-space:pre-wrap;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:16px;margin-top:14px}
+.small{color:#475569;font-size:14px}
+body.big .small{font-size:16px}
+h2{margin-top:0;font-size:24px;letter-spacing:-.3px}
+h3{margin-bottom:6px}
+.note{background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px}
+.hidden{display:none}
+.topbar{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.topbar button{background:#fff;color:#0f172a;border:0;padding:10px 14px;border-radius:10px;font-weight:700;cursor:pointer}
+.saveitem{border:1px solid #e2e8f0;border-radius:14px;padding:12px;margin-top:10px}
+.saveitem strong{display:block}
+@media(max-width:600px){header h1{font-size:30px}.card{padding:18px}.tabs{position:static}}
+</style>
+</head>
+<body>
+<header>
+<div class="wrap" style="padding:0">
+<div class="topbar">
+<div>
+<div class="eyebrow">Between human and AI</div>
+<h1>Inter Prompting</h1>
+<p>사람과 AI 사이에서, 짧은 말을 AI가 제대로 알아듣는 프롬프트로 바꿔드립니다.</p>
+<div class="hero-steps"><span>1. 하고 싶은 일 적기</span><span>2. 프롬프트 만들기</span><span>3. 복사해서 AI에 붙이기</span></div>
+</div>
+<button id="bigBtn" type="button">글자 크게</button>
+</div>
+</div>
+</header>
+
+<div class="wrap">
+<div class="tabs">
+<button type="button" class="tabBtn active" data-tab="tabMake">1. 프롬프트 만들기</button>
+<button type="button" class="tabBtn" data-tab="tabEasy">2. AI 말 쉽게 풀기</button>
+<button type="button" class="tabBtn" data-tab="tabPing">3. 티키타카 답장</button>
+<button type="button" class="tabBtn" data-tab="tabDiag">4. 프롬프트 진단</button>
+<button type="button" class="tabBtn" data-tab="tabSave">5. 내 프롬프트 저장함</button>
+</div>
+
+<section id="tabMake" class="card">
+<h2>1. 하고 싶은 일을 적으면, 좋은 프롬프트가 됩니다</h2>
+<p class="small">예시 버튼을 눌러보고, 내 말로 바꿔서 써보세요. 만든 프롬프트를 복사해서 챗GPT, Muse, Gemini 같은 AI에 붙여넣으면 됩니다.</p>
+
+<label for="want">하고 싶은 일 (간략히)</label>
+<textarea id="want" placeholder="예: 중2 과학 전기 단원을 시험 전에 복습하고 싶어"></textarea>
+<div>
+<button type="button" class="chip" data-example="중2 과학 전기 단원을 시험 전에 복습하고 싶어">공부 예시</button>
+<button type="button" class="chip" data-example="학교 축제 부스 아이디어를 5개만 뽑고 싶어">아이디어 예시</button>
+<button type="button" class="chip" data-example="내가 만든 게임 소개 글을 짧고 재미있게 쓰고 싶어">글쓰기 예시</button>
+</div>
+
+<label for="field">어떤 분야인가요?</label>
+<select id="field">
+<option value="study">공부 / 시험</option>
+<option value="writing">글쓰기 / 과제</option>
+<option value="coding">코딩 / 사이트 만들기</option>
+<option value="game">게임 / 창작</option>
+<option value="video">영상 / 유튜브</option>
+<option value="business">사업 / 창업 아이디어</option>
+<option value="life">생활 / 고민 상담</option>
+<option value="other">기타</option>
+</select>
+
+<label for="outtype">어떤 결과물을 원하나요?</label>
+<select id="outtype">
+<option value="explain">쉽게 설명해주는 글</option>
+<option value="plan">단계별 계획표</option>
+<option value="table">표로 정리</option>
+<option value="text">글 / 대본 / 소개글</option>
+<option value="code">코드 / 만드는 방법</option>
+<option value="ideas">아이디어 목록</option>
+</select>
+
+<label for="detail">얼마나 자세하게?</label>
+<select id="detail">
+<option value="simple">간단하게, 핵심만</option>
+<option value="normal" selected>적당히 자세하게</option>
+<option value="expert">전문가 수준으로 자세하게</option>
+</select>
+
+<label for="tone">말투는?</label>
+<select id="tone">
+<option value="easy">누구나 이해하기 쉽게</option>
+<option value="friendly" selected>친근하게</option>
+<option value="polite">정중하게</option>
+</select>
+
+<button type="button" class="primary" id="makeBtn">프롬프트 만들기</button>
+<div id="makeOut" class="out">여기에 만든 프롬프트가 나옵니다.</div>
+<button type="button" class="copy" id="copyMake">프롬프트 복사하기</button>
+<button type="button" class="secondary" id="saveMake">이 프롬프트 저장함에 저장하기</button>
+
+<h3>특별 기능: 한 번에 3가지 버전</h3>
+<p class="small">같은 내용을 짧게, 초보자용으로, 전문가용으로 각각 바꿔줍니다. 상황에 맞는 버전을 골라 쓰세요.</p>
+<button type="button" class="primary" id="threeBtn">3가지 버전 만들기</button>
+<div id="threeOut" class="out">프롬프트를 만든 뒤에 버튼을 누르면 여기에 3가지 버전이 나옵니다.</div>
+
+<h3>특별 기능: 영어 구조 버전</h3>
+<p class="small">영어로 된 구조에 내 요청(한국어)을 그대로 넣어줍니다. 이미지 AI나 해외 AI에서 영어가 더 잘 통할 때 쓰세요. 완전 번역이 아니라 영어 뼈대 + 한국어 요청 조합입니다.</p>
+<button type="button" class="primary" id="enBtn">영어 구조 버전 만들기</button>
+<div id="enOut" class="out">프롬프트를 만든 뒤에 버튼을 누르면 여기에 영어 구조 버전이 나옵니다.</div>
+<button type="button" class="copy" id="copyEn">영어 버전 복사하기</button>
+
+<div class="note" style="margin-top:16px">
+<strong>왜 이렇게 만들었나요?</strong><br>
+좋은 프롬프트는 역할, 목표, 조건, 출력 형식이 분명합니다. 이 사이트는 분야별 전문가 역할과 그 분야의 체크리스트를 자동으로 붙여서, 짧은 말도 AI가 헷갈리지 않게 바꿔줍니다.
+</div>
+<div class="note" style="margin-top:12px">
+<strong>솔직한 안내</strong><br>
+이 버전은 서버 AI가 아니라 기기 안에서 돌아가는 전문가 구조 엔진입니다. 그래서 무료로, 로그인 없이, 인터넷이 없어도 프롬프트를 만들 수 있습니다. 진짜 AI가 직접 글을 써주게 하려면 유료 API 키가 필요해서, 그 부분은 나중에 부모님과 상의한 뒤에 연결하는 구조로 남겨두었습니다.
+</div>
+</section>
+
+<section id="tabEasy" class="card hidden">
+<h2>2. AI 말이 어려우면, 쉽게 풀어드립니다</h2>
+<p class="small">AI가 준 답장을 아래에 붙여넣으세요. 어려운 단어는 쉬운 뜻으로 풀고, 긴 문장은 짧게 나누고, 핵심만 먼저 보여드립니다.</p>
+
+<label for="aiText">AI가 준 답장 붙여넣기</label>
+<textarea id="aiText" placeholder="AI의 답장을 여기에 붙여넣으세요"></textarea>
+
+<label for="easyLevel">누구 기준으로 쉽게 풀까요?</label>
+<select id="easyLevel">
+<option value="child">초등학생도 이해할 수 있게</option>
+<option value="senior" selected>처음 접하는 어른도 이해할 수 있게</option>
+<option value="beginner">AI를 처음 쓰는 사람 기준으로</option>
+</select>
+
+<button type="button" class="primary" id="easyBtn">쉽게 풀어주기</button>
+
+<h3>쉬운 버전</h3>
+<div id="easyOut" class="out">여기에 쉬운 버전이 나옵니다.</div>
+<button type="button" class="secondary" id="speakEasy">쉬운 버전을 음성으로 듣기</button>
+<button type="button" class="secondary" id="stopSpeak">음성 멈추기</button>
+<h3>핵심만 3줄</h3>
+<div id="easyKey" class="out">여기에 핵심이 나옵니다.</div>
+<h3>어려운 단어 풀이</h3>
+<div id="easyWords" class="out">여기에 단어 풀이가 나옵니다.</div>
+
+<h3>다른 AI에게 쉽게 풀어달라고 부탁하는 프롬프트</h3>
+<p class="small">위 쉬운 풀이가 부족하면, 이 프롬프트를 복사해서 AI에 붙여넣으세요. 진짜 AI가 다시 쉽게 설명해줍니다.</p>
+<div id="easyPromptOut" class="out">AI 답장을 붙여넣고 버튼을 누르면 여기에 나옵니다.</div>
+<button type="button" class="copy" id="copyEasyPrompt">이 프롬프트 복사하기</button>
+</section>
+
+<section id="tabPing" class="card hidden">
+<h2>3. 티키타카: AI 답장에 다시 답장하기</h2>
+<p class="small">AI 답장이 내 마음에 100% 들지 않을 때가 많죠. 그 답장을 그대로 두고, 내 목표만 추가하면 다음 답장을 위한 프롬프트를 만들어줍니다.</p>
+
+<label for="myFirst">내가 처음 한 말</label>
+<textarea id="myFirst" placeholder="예: 중2 과학 전기 복습 계획을 짜줘"></textarea>
+
+<label for="aiReply">AI가 준 답장</label>
+<textarea id="aiReply" placeholder="AI의 답장을 여기에 붙여넣으세요"></textarea>
+
+<label for="goalSelect">이번에는 어떻게 바꾸고 싶나요?</label>
+<select id="goalSelect">
+<option value="easier">더 쉽게 풀어줘</option>
+<option value="detail">더 자세하게 알려줘</option>
+<option value="example">예시를 넣어줘</option>
+<option value="short">짧게 요약해줘</option>
+<option value="correct">틀린 부분이나 아쉬운 부분을 짚어줘</option>
+<option value="next">다음 단계만 알려줘</option>
+<option value="other">다른 관점으로 알려줘</option>
+<option value="table">표로 정리해줘</option>
+</select>
+
+<label for="goalCustom">직접 목표 적기 (선택)</label>
+<input type="text" id="goalCustom" placeholder="예: 시험에 나올 부분만 콕 집어서 알려줘">
+
+<button type="button" class="primary" id="pingBtn">답장용 프롬프트 만들기</button>
+<div id="pingOut" class="out">여기에 답장용 프롬프트가 나옵니다.</div>
+<button type="button" class="copy" id="copyPing">답장용 프롬프트 복사하기</button>
+</section>
+
+<section id="tabDiag" class="card hidden">
+<h2>4. 프롬프트 진단: 내 질문, 몇 점일까?</h2>
+<p class="small">내가 평소 AI에게 던지는 질문을 붙여넣으세요. 역할, 목표, 형식, 조건, 예시, 구체성이 들어있는지 점수로 보여주고, 빠진 부분만 보완한 버전도 만들어줍니다. 다른 프롬프트 사이트에는 잘 없는, Inter Prompting만의 기능입니다.</p>
+
+<label for="diagInput">진단할 프롬프트</label>
+<textarea id="diagInput" placeholder="예: 과학 공부법 알려줘"></textarea>
+<button type="button" class="primary" id="diagBtn">진단하기</button>
+<div id="diagOut" class="out">여기에 진단 결과가 나옵니다.</div>
+<h3>보완된 프롬프트</h3>
+<div id="diagFixOut" class="out">진단 뒤에 여기에 보완된 프롬프트가 나옵니다.</div>
+<button type="button" class="copy" id="copyDiagFix">보완된 프롬프트 복사하기</button>
+</section>
+
+<section id="tabSave" class="card hidden">
+<h2>5. 내 프롬프트 저장함</h2>
+<p class="small">마음에 드는 프롬프트는 저장함에 저장해두세요. 기기 안에만 저장되고, 서버로 보내지 않습니다. 다음에 다시 쓸 때 불러와서 복사하면 됩니다.</p>
+<div id="saveList">저장된 프롬프트가 아직 없습니다. 1번 탭에서 프롬프트를 만든 뒤 “저장함에 저장하기”를 눌러보세요.</div>
+<button type="button" class="secondary" id="clearSaves">저장함 전부 지우기</button>
+</section>
+
+<p class="small">입력한 내용은 서버로 보내지 않습니다. 이 페이지는 기기 안에서만 동작합니다. 이름, 전화번호, 비밀번호 같은 개인정보는 절대 붙여넣지 마세요.</p>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+document.querySelectorAll('.tabBtn').forEach((b) => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.tabBtn').forEach((x) => x.classList.remove('active'));
+    b.classList.add('active');
+    document.querySelectorAll('section.card').forEach((s) => s.classList.add('hidden'));
+    $(b.dataset.tab).classList.remove('hidden');
+    if (b.dataset.tab === 'tabSave') renderSaves();
+  });
+});
+
+$('bigBtn').addEventListener('click', () => {
+  document.body.classList.toggle('big');
+  $('bigBtn').textContent = document.body.classList.contains('big') ? '글자 원래대로' : '글자 크게';
+});
+
+document.querySelectorAll('[data-example]').forEach((b) => {
+  b.addEventListener('click', () => { $('want').value = b.dataset.example; });
+});
+
+const FIELDS = {
+  study: { role: '중학교 공부 코치이자 과목 전문가', en: 'middle school study coach and subject expert', check: '개념을 쉬운 예시로 먼저 설명하고, 자주 틀리는 부분과 외우는 요령을 꼭 넣어줘' },
+  writing: { role: '글쓰기 전문가', en: 'writing expert', check: '문장은 짧고 자연스럽게, 억지스러운 표현은 빼고, 내 말투를 살려줘' },
+  coding: { role: '웹 개발 전문가', en: 'web development expert', check: '복사해서 바로 실행할 수 있는 코드와, 어디를 고치면 어떻게 바뀌는지 설명을 함께 줘' },
+  game: { role: '게임 기획자이자 게임 개발 전문가', en: 'game designer and game developer', check: '재미의 핵심(훅)이 무엇인지 먼저 말하고, 규칙, 난이도, 보상을 구체적으로 정해줘' },
+  video: { role: '유튜브 기획 전문가', en: 'YouTube planning expert', check: '첫 3초 훅, 전개, 마무리를 나누고, 제목 후보 3개도 함께 줘' },
+  business: { role: '1인 창업 전문가', en: 'solo startup expert', check: '누가, 어떤 불편을, 왜 돈을 내고 해결하려는지 먼저 정리하고, 돈이 안 드는 첫 실행 단계를 줘' },
+  life: { role: '생활 상담 전문가', en: 'daily life counseling expert', check: '단정적으로 결론내리지 말고, 선택지 2~3개와 각각의 장단점을 차분하게 정리해줘' },
+  other: { role: '해당 분야 전문가', en: 'expert in this field', check: '전문 용어가 나오면 괄호 안에 쉬운 뜻을 함께 적어줘' }
+};
+
+const OUTTYPES = {
+  explain: '쉽게 설명하는 글',
+  plan: '단계별 계획표 (1단계, 2단계 순서로)',
+  table: '표로 정리한 결과',
+  text: '바로 쓸 수 있는 글 / 대본 / 소개글',
+  code: '실행 가능한 코드와 간단한 설명',
+  ideas: '아이디어 목록 (각각 한 줄 이유 포함)'
+};
+
+const OUTTYPES_EN = {
+  explain: 'an easy explanation',
+  plan: 'a step-by-step plan',
+  table: 'a table summary',
+  text: 'ready-to-use text / script / introduction',
+  code: 'runnable code with a short explanation',
+  ideas: 'a list of ideas, each with a one-line reason'
+};
+
+const DETAILS = {
+  simple: '핵심만 간단하게, 길게 늘어놓지 말고',
+  normal: '적당히 자세하게, 중요한 부분은 예시와 함께',
+  expert: '전문가 수준으로 자세하게, 근거와 주의할 점까지'
+};
+
+const TONES = {
+  easy: '누구나 이해하기 쉬운 말로',
+  friendly: '친근하고 편안한 말투로',
+  polite: '정중하고 차분한 말투로'
+};
+
+function copyText(id) {
+  const el = $(id);
+  const text = el.value !== undefined ? el.value : el.textContent;
+  if (!text || text.includes('여기에')) { alert('먼저 만들기를 눌러주세요.'); return; }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => alert('복사했어요. AI에 붙여넣으세요.')).catch(() => alert('복사가 안 돼요. 글을 길게 눌러서 직접 복사해주세요.'));
+  } else {
+    alert('이 브라우저에서는 자동 복사가 안 돼요. 글을 길게 눌러서 직접 복사해주세요.');
+  }
+}
+
+function buildMainPrompt() {
+  const want = $('want').value.trim();
+  if (!want) return '';
+  const f = FIELDS[$('field').value];
+  return '너는 ' + f.role + '야.\n\n'
+    + '내가 원하는 일: ' + want + '\n'
+    + '원하는 결과물: ' + OUTTYPES[$('outtype').value] + '\n'
+    + '수준: ' + DETAILS[$('detail').value] + '\n'
+    + '말투: ' + TONES[$('tone').value] + '\n\n'
+    + '꼭 지켜줘:\n'
+    + '1. ' + f.check + '\n'
+    + '2. 모르는 내용은 지어내지 말고, 모른다고 솔직히 말하고 확인할 방법을 알려줘.\n'
+    + '3. 내 요청이 모호하면 바로 답하지 말고, 먼저 꼭 필요한 질문 2~3개만 물어봐.\n'
+    + '4. 마지막에는 내가 다음에 무엇을 하면 되는지 한 문장으로 정리해줘.\n\n'
+    + '지금 바로 위 조건에 맞게 답해줘.';
+}
+
+$('makeBtn').addEventListener('click', () => {
+  const p = buildMainPrompt();
+  if (!p) { $('makeOut').textContent = '먼저 “하고 싶은 일”을 한 줄이라도 적어주세요.'; return; }
+  $('makeOut').textContent = p;
+});
+$('copyMake').addEventListener('click', () => copyText('makeOut'));
+
+$('threeBtn').addEventListener('click', () => {
+  const want = $('want').value.trim();
+  if (!want) { $('threeOut').textContent = '먼저 하고 싶은 일을 적고, 프롬프트 만들기를 눌러주세요.'; return; }
+  const f = FIELDS[$('field').value];
+  $('threeOut').textContent = '[짧은 버전]\n너는 ' + f.role + '야. ' + want + '를 핵심만 짧게, ' + OUTTYPES[$('outtype').value] + '로 알려줘. 예시는 1개만.\n\n'
+    + '[초보자용 버전]\n너는 친절한 선생님이야. AI를 처음 쓰는 사람에게 설명하듯, ' + want + '를 단계별로 천천히 알려줘. 어려운 단어가 나오면 쉬운 뜻을 괄호 안에 적어줘. 마지막에 이해했는지 확인할 질문 1개를 해줘.\n\n'
+    + '[전문가용 버전]\n' + buildMainPrompt() + '\n추가로: 반례나 예외 상황, 자주 틀리는 지점, 결과를 검증하는 방법까지 포함해줘.';
+});
+
+$('enBtn').addEventListener('click', () => {
+  const want = $('want').value.trim();
+  if (!want) { $('enOut').textContent = '먼저 하고 싶은 일을 적어주세요.'; return; }
+  const f = FIELDS[$('field').value];
+  $('enOut').textContent = 'You are a ' + f.en + '.\n\nTask (in Korean, keep the meaning exactly): ' + want + '\nDesired output: ' + OUTTYPES_EN[$('outtype').value] + '.\n\nRules:\n1. Do not invent facts you do not know. Say so and tell me how to check.\n2. If my request is vague, ask 2-3 clarifying questions first.\n3. End with one sentence: what I should do next.\n\nAnswer in Korean unless I ask otherwise.';
+});
+$('copyEn').addEventListener('click', () => copyText('enOut'));
+
+function loadSaves() {
+  try { return JSON.parse(localStorage.getItem('interprompting_saves') || '[]'); } catch (e) { return []; }
+}
+function savePrompt(text, title) {
+  const saves = loadSaves();
+  saves.unshift({ title: title, text: text, date: new Date().toLocaleString('ko-KR') });
+  localStorage.setItem('interprompting_saves', JSON.stringify(saves.slice(0, 30)));
+}
+$('saveMake').addEventListener('click', () => {
+  const text = $('makeOut').textContent;
+  if (!text || text.includes('여기에')) { alert('먼저 프롬프트를 만들어주세요.'); return; }
+  const want = $('want').value.trim();
+  savePrompt(text, want ? want.slice(0, 40) : '저장한 프롬프트');
+  alert('저장함에 저장했어요. 5번 탭에서 볼 수 있어요.');
+});
+function renderSaves() {
+  const saves = loadSaves();
+  const box = $('saveList');
+  box.innerHTML = '';
+  if (!saves.length) { box.textContent = '저장된 프롬프트가 아직 없습니다. 1번 탭에서 프롬프트를 만든 뒤 “저장함에 저장하기”를 눌러보세요.'; return; }
+  saves.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'saveitem';
+    const t = document.createElement('strong');
+    t.textContent = s.title;
+    const d = document.createElement('div');
+    d.className = 'small';
+    d.textContent = s.date;
+    const p = document.createElement('div');
+    p.style.whiteSpace = 'pre-wrap';
+    p.textContent = s.text.slice(0, 300) + (s.text.length > 300 ? '...' : '');
+    const copy = document.createElement('button');
+    copy.className = 'copy';
+    copy.textContent = '복사하기';
+    copy.addEventListener('click', () => {
+      if (navigator.clipboard) navigator.clipboard.writeText(s.text).then(() => alert('복사했어요.'));
+    });
+    const del = document.createElement('button');
+    del.className = 'secondary';
+    del.textContent = '삭제';
+    del.addEventListener('click', () => {
+      const rest = loadSaves().filter((_, j) => j !== i);
+      localStorage.setItem('interprompting_saves', JSON.stringify(rest));
+      renderSaves();
+    });
+    div.append(t, d, p, copy, del);
+    box.appendChild(div);
+  });
+}
+$('clearSaves').addEventListener('click', () => {
+  if (!confirm('저장함을 전부 지울까요?')) return;
+  localStorage.removeItem('interprompting_saves');
+  renderSaves();
+});
+
+const GLOSSARY = [
+  ['프롬프트', 'AI에게 하는 질문이나 지시문'],
+  ['알고리즘', '문제를 푸는 순서나 방법'],
+  ['인공지능', '사람처럼 배우고 판단하려고 만든 컴퓨터 프로그램'],
+  ['챗봇', '말로 대화하는 컴퓨터 프로그램'],
+  ['데이터', '컴퓨터가 다루는 정보나 자료'],
+  ['서버', '다른 컴퓨터에 정보를 보내주는 큰 컴퓨터'],
+  ['클라우드', '인터넷에 빌려 쓰는 저장 공간과 컴퓨터'],
+  ['로그인', '내 계정으로 들어가는 것'],
+  ['비밀번호', '내 계정만 열 수 있는 비밀 번호'],
+  ['구독', '매달 돈을 내고 계속 쓰는 것'],
+  ['앱', '휴대폰이나 컴퓨터에서 쓰는 프로그램'],
+  ['링크', '누르면 다른 페이지로 가는 주소'],
+  ['파일', '글, 사진, 영상 같은 자료 하나하나'],
+  ['업로드', '내 자료를 인터넷에 올리는 것'],
+  ['다운로드', '인터넷 자료를 내 기기로 받는 것'],
+  ['버그', '프로그램의 고장이나 오류'],
+  ['코드', '컴퓨터가 알아듣는 명령문'],
+  ['API', '프로그램끼리 정보를 주고받는 약속'],
+  ['토큰', 'AI가 글을 셀 때 쓰는 작은 단위'],
+  ['모델', 'AI가 학습한 결과물, AI의 두뇌 같은 것'],
+  ['학습', 'AI가 많은 예시를 보고 패턴을 익히는 것'],
+  ['렌더링', '화면에 그림이나 영상을 그려내는 것'],
+  ['피싱', '가짜 사이트나 문자로 속여 정보를 빼가는 사기'],
+  ['악성코드', '기기를 해치려고 만든 나쁜 프로그램']
+];
+
+$('easyBtn').addEventListener('click', () => {
+  const text = $('aiText').value.trim();
+  if (!text) { $('easyOut').textContent = '먼저 AI 답장을 붙여넣어주세요.'; return; }
+  const level = $('easyLevel').value;
+  const levelText = level === 'child' ? '초등학생도' : (level === 'senior' ? '처음 접하는 어른도' : 'AI를 처음 쓰는 사람도');
+  let easy = text;
+  const found = [];
+  const sorted = [...GLOSSARY].sort((a, b) => b[0].length - a[0].length);
+  sorted.forEach(([term, mean]) => {
+    if (easy.includes(term)) {
+      found.push(term + ': ' + mean);
+      easy = easy.split(term).join(term + '(' + mean + ')');
+    }
+  });
+  const sentences = text.replace(/\n+/g, ' ').split(/(?<=[.!?])\s+/).map((s) => s.trim()).filter(Boolean);
+  const keySentences = sentences.filter((s) => /핵심|중요|결론|주의|해야|방법|먼저/.test(s)).slice(0, 3);
+  const keys = keySentences.length ? keySentences : sentences.slice(0, 3);
+  $('easyOut').textContent = easy;
+  $('easyKey').textContent = keys.map((s, i) => (i + 1) + '. ' + s).join('\n');
+  $('easyWords').textContent = found.length ? found.join('\n') : '특별히 어려운 단어를 찾지 못했어요. 그래도 긴 문장은 짧게 나눠서 읽어보세요.';
+  $('easyPromptOut').textContent = '아래 글을 ' + levelText + ' 이해할 수 있게 다시 써줘. 어려운 단어는 쉬운 말로 풀고, 한 문장은 짧게, 꼭 필요한 예시를 하나만 들어줘. 원래 뜻은 바꾸지 마.\n\n"""' + text + '"""';
+});
+$('copyEasyPrompt').addEventListener('click', () => copyText('easyPromptOut'));
+
+$('speakEasy').addEventListener('click', () => {
+  const text = $('easyOut').textContent;
+  if (!text || text.includes('여기에')) { alert('먼저 쉽게 풀어주기를 눌러주세요.'); return; }
+  if (!('speechSynthesis' in window)) { alert('이 브라우저에서는 음성 읽기를 지원하지 않아요.'); return; }
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'ko-KR';
+  u.rate = 0.9;
+  window.speechSynthesis.speak(u);
+});
+$('stopSpeak').addEventListener('click', () => {
+  if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+});
+
+const GOALS = {
+  easier: '더 쉽게, 어려운 단어는 쉬운 말로 풀어서 다시 설명해줘.',
+  detail: '더 자세하게, 이유와 예시를 덧붙여서 다시 설명해줘.',
+  example: '실생활 예시를 2개 이상 넣어서 다시 설명해줘.',
+  short: '핵심을 5줄 이내로 짧게 요약해서 다시 알려줘.',
+  correct: '앞 답변에서 틀렸거나 아쉬운 부분을 짚고, 고친 버전으로 다시 알려줘.',
+  next: '이제 내가 다음에 무엇을 하면 되는지, 순서대로만 알려줘.',
+  other: '정반대 관점이나 다른 방법으로도 설명해줘.',
+  table: '내용을 표로 정리해서 한눈에 보이게 다시 알려줘.'
+};
+
+$('pingBtn').addEventListener('click', () => {
+  const first = $('myFirst').value.trim();
+  const reply = $('aiReply').value.trim();
+  const custom = $('goalCustom').value.trim();
+  if (!first || !reply) { $('pingOut').textContent = '내가 처음 한 말과 AI 답장을 둘 다 넣어주세요.'; return; }
+  const goal = custom || GOALS[$('goalSelect').value];
+  const prompt = '앞 대화를 이어서 다시 답해줘.\n\n'
+    + '내가 처음 한 말:\n"""' + first + '"""\n\n'
+    + 'AI가 준 답장:\n"""' + reply + '"""\n\n'
+    + '내가 이번에 원하는 목표: ' + goal + '\n\n'
+    + '지켜줘:\n'
+    + '1. 앞 답장에서 좋은 부분은 유지하고, 바꾸라는 부분만 바꿔줘.\n'
+    + '2. 내 목표와 관련 없는 말은 길게 덧붙이지 마.\n'
+    + '3. 마지막에 “이렇게 바꿨어요”를 한 문장으로 정리해줘.';
+  $('pingOut').textContent = prompt;
+});
+$('copyPing').addEventListener('click', () => copyText('pingOut'));
+
+$('diagBtn').addEventListener('click', () => {
+  const text = $('diagInput').value.trim();
+  if (!text) { $('diagOut').textContent = '먼저 진단할 프롬프트를 붙여넣어주세요.'; return; }
+  const checks = [
+    { name: '역할이 있는가 (너는 전문가야 등)', ok: /(너는|당신은|역할|전문가|코치|선생님|act as)/.test(text), score: 20 },
+    { name: '목표가 분명한가 (해줘, 알려줘 등)', ok: /(해줘|알려줘|만들어줘|써줘|정리해줘|짜줘)/.test(text), score: 20 },
+    { name: '형식이 정해졌는가 (표, 단계, 목록 등)', ok: /(표|단계|목록|글|대본|계획|요약)/.test(text), score: 20 },
+    { name: '조건이 있는가 (꼭, 반드시, 빼고 등)', ok: /(꼭|반드시|하지 마|빼고|포함|만|이내|쉽게|자세히)/.test(text), score: 15 },
+    { name: '예시가 있는가', ok: /(예시|예를|예를 들어)/.test(text), score: 10 },
+    { name: '구체적인가 (30자 이상)', ok: text.length >= 30, score: 15 }
+  ];
+  const score = checks.reduce((sum, c) => sum + (c.ok ? c.score : 0), 0);
+  const missing = checks.filter((c) => !c.ok).map((c) => c.name);
+  $('diagOut').textContent = '점수: ' + score + '점 / 100점\n'
+    + checks.map((c) => (c.ok ? 'O ' : 'X ') + c.name + ' (' + c.score + '점)').join('\n')
+    + (missing.length ? '\n\n빠진 것: ' + missing.join(', ') : '\n\n빠진 것이 없어요. 좋은 프롬프트예요.');
+  let fix = text;
+  if (!checks[0].ok) fix += '\n\n[역할 추가] 너는 이 분야 전문가야.';
+  if (!checks[2].ok) fix += '\n[형식 추가] 결과는 단계별로 정리해줘.';
+  if (!checks[3].ok) fix += '\n[조건 추가] 모르는 내용은 지어내지 말고, 모른다고 솔직히 말해줘.';
+  if (!checks[4].ok) fix += '\n[예시 추가] 이해하기 쉬운 예시를 1개 넣어줘.';
+  fix += '\n마지막에는 다음에 무엇을 하면 되는지 한 문장으로 정리해줘.';
+  $('diagFixOut').textContent = fix;
+});
+$('copyDiagFix').addEventListener('click', () => copyText('diagFixOut'));
+</script>
+</body>
+</html>
